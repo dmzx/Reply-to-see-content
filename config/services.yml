@@ -1,0 +1,12 @@
+services:
+    dmzx.replytoseecontent.listener:
+        class: dmzx\replytoseecontent\event\listener
+        arguments:
+            - '@content.visibility'
+            - '@dbal.conn'
+            - '@request'
+            - '@template'
+            - '@auth'
+            - '@user'
+        tags:
+            - { name: event.listener }

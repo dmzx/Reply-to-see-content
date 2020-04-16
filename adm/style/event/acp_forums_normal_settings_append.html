@@ -1,0 +1,7 @@
+<dl>
+	<dt><label for="replytoseecontent_enable">{{ lang('REPLYTOSEECONTENT_ENABLE') }}{{ lang('COLON') }}</label><br><span>{{ lang('REPLYTOSEECONTENT_ENABLE_EXPLAIN') }}</span></dt>
+	<dd>
+		<label><input type="radio" class="radio" name="replytoseecontent_enable" value="1"{% if S_REPLYTOSEECONTENT_ENABLE %} id="replytoseecontent_enable" checked="checked"{% endif %} /> {{ lang('YES') }}</label>
+		<label><input type="radio" class="radio" name="replytoseecontent_enable" value="0"{% if not S_REPLYTOSEECONTENT_ENABLE %} id="replytoseecontent_enable" checked="checked"{% endif %} /> {{ lang('NO') }}</label>
+	</dd>
+</dl>
