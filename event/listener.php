@@ -73,6 +73,7 @@ class listener implements EventSubscriberInterface
 	{
 		return [
 			'core.user_setup'								=> 'load_language_on_setup',
+			'core.permissions'								=> 'permissions',
 			'core.acp_manage_forums_request_data'			=> 'acp_manage_forums_request_data',
 			'core.acp_manage_forums_initialise_data'		=> 'acp_manage_forums_initialise_data',
 			'core.acp_manage_forums_display_form'			=> 'acp_manage_forums_display_form',
@@ -83,6 +84,7 @@ class listener implements EventSubscriberInterface
 			'core.search_modify_rowset'						=> 'search_modify_rowset',
 			'core.search_modify_param_before'				=> 'search_modify_param_before',
 			'core.ucp_pm_compose_quotepost_query_after'		=> 'ucp_pm_compose_quotepost_query_after',
+			'core.topic_review_modify_post_list'			=> 'topic_review_modify_post_list',
 			'core.topic_review_modify_row'					=> 'topic_review_modify_row',
 		];
 	}
@@ -95,6 +97,15 @@ class listener implements EventSubscriberInterface
 			'lang_set' => 'common',
 		);
 		$event['lang_set_ext'] = $lang_set_ext;
+	}
+
+	public function permissions($event)
+	{
+		$permissions = array_merge($event['permissions'], [
+			'u_replytoseecontent_see_ft'	=> ['lang' => 'ACL_REPLYTOSEECONTENT_SEE_FT', 'cat' => 'post'],
+			'u_replytoseecontent_see_all'	=> ['lang' => 'ACL_REPLYTOSEECONTENT_SEE_ALL', 'cat' => 'post'],
+		]);
+		$event['permissions'] = $permissions;
 	}
 
 	public function acp_manage_forums_request_data($event)
@@ -128,16 +139,18 @@ class listener implements EventSubscriberInterface
 		$start = $event['start'];
 		$total_posts = $event['total_posts'];
 		$topic_id = $event['topic_id'];
+		$forum_id = $event['forum_id'];
 
 		$s_replytoseecontent = $this->check_topic_id($topic_id);
 
-		if ($s_replytoseecontent)
+		if ($s_replytoseecontent && (in_array($forum_id, $this->seecontent_forums())))
 		{
 			$topic_data['prev_posts'] = $start = 0;
 			$total_posts = 1;
 			$post_id == $topic_data['topic_first_post_id'];
 		}
 
+		$event['forum_id'] = $forum_id;
 		$event['topic_id'] = $topic_id;
 		$event['total_posts'] = $total_posts;
 		$event['topic_data'] = $topic_data;
@@ -191,15 +204,28 @@ class listener implements EventSubscriberInterface
 
  	public function viewtopic_modify_post_row($event)
 	{
-		$post_data = $event['row'];
-		$post_row	= $event['post_row'];
+		$row 		= $event['row'];
+		$post_data 	= $event['row'];
+		$post_row 	= $event['post_row'];
+		$topic_data = $event['topic_data'];
 
 		$forum_ids = $this->seecontent_forums();
 
-		if (!$this->unhide_in_post($post_data['post_id']) && (in_array($event['topic_data']['forum_id'], $forum_ids)))
+		if (!$this->unhide_in_post($post_data['post_id']) && (in_array($topic_data['forum_id'], $forum_ids)))
 		{
 			$post_row = array_merge($post_row, [
-				'U_QUOTE' => false
+				'U_QUOTE'	=> false
+			]);
+		}
+
+		if (!$this->auth->acl_gets('u_replytoseecontent_see_ft') && !$this->unhide_in_post($post_data['post_id']) && (in_array($topic_data['forum_id'], $forum_ids)) && ($topic_data['topic_first_post_id'] == $row['post_id']))
+		{
+			$post_row = array_merge($post_row, [
+				'MESSAGE'	=> $this->user->lang('REPLYTOSEECONTENT_TEXT'),
+			]);
+
+			$this->template->assign_vars([
+				'S_REPLYTOSEECONTENT_FIRST_POST' => true,
 			]);
 		}
 		$event['post_row'] = $post_row;
@@ -207,18 +233,18 @@ class listener implements EventSubscriberInterface
 
 	public function search_modify_rowset($event)
 	{
-		$a_topicIds = [];
+		$a_topic_ids = [];
 
 		$rowset = $event['rowset'];
 
 		foreach($rowset as $row)
 		{
-			$a_topicIds[$row['topic_id']] = 1;
+			$a_topic_ids[$row['topic_id']] = 1;
 		}
 
-		$a_topicIds = array_keys($a_topicIds);
+		$a_topic_ids = array_keys($a_topic_ids);
 
-		$a_topic_replied = $this->check_topic_ids($a_topicIds);
+		$a_topic_replied = $this->check_topic_ids($a_topic_ids);
 
 		foreach($rowset as $key => $row)
 		{
@@ -226,7 +252,7 @@ class listener implements EventSubscriberInterface
 
 			$forum_ids = $this->seecontent_forums();
 
-			if ($a_topic_replied[$topic_id] == $key['topic_id'] && (in_array($row['forum_id'], $forum_ids)))
+			if ($a_topic_replied[$topic_id] == $key['topic_id'] && (in_array($row['forum_id'], $forum_ids)) && ($row['topic_first_post_id'] != $row['post_id'] || !$this->auth->acl_gets('u_replytoseecontent_see_ft')))
 			{
 				$rowset[$key]['post_text'] = str_replace($row['post_text'], '', $this->user->lang('REPLYTOSEECONTENT_TEXT'));
 			}
@@ -261,18 +287,31 @@ class listener implements EventSubscriberInterface
 		$event['post'] = $post;
 	}
 
+	public function topic_review_modify_post_list($event)
+	{
+		if ($this->auth->acl_gets('u_replytoseecontent_see_ft'))
+		{
+			$post_list = (array) $event['post_list'];
+			$this->content_post_id = array_pop($post_list);
+		}
+	}
+
 	public function topic_review_modify_row($event)
 	{
 		$forum_id = (int) $event['forum_id'];
+		$topic_id = (int) $event['topic_id'];
 
 		if (!$this->unhide_in_post($event['row']['post_id']) && (in_array($forum_id, $this->seecontent_forums())))
 		{
 			$post_row = $event['post_row'];
 
-			$post_row = array_merge($post_row, [
-				'POSTER_QUOTE' 	=> false,
-				'MESSAGE' 		=> $this->user->lang('REPLYTOSEECONTENT_TEXT'),
-			]);
+			if ($event['row']['post_id'] != $this->content_post_id || $event['row']['post_id'] != array_pop($this->topic_data($topic_id)))
+			{
+				$post_row = array_merge($post_row, [
+					'POSTER_QUOTE' 	=> false,
+					'MESSAGE' 		=> $this->user->lang('REPLYTOSEECONTENT_TEXT'),
+				]);
+			}
 			$event['post_row'] = $post_row;
 		}
 	}
@@ -338,12 +377,11 @@ class listener implements EventSubscriberInterface
 
 		foreach($topic_ids as $topic_id)
 		{
-			if ($this->auth->acl_get('m_', $forum_ids[$topic_id]))
+			if ($this->auth->acl_get('m_', $forum_ids[$topic_id]) || $this->auth->acl_gets('u_replytoseecontent_see_all'))
 			{
 				$a_topic_replied[$topic_id] = true;
 			}
 		}
-
 		return $a_topic_replied;
 	}
 
@@ -357,7 +395,7 @@ class listener implements EventSubscriberInterface
 		$forum_id = $forum_id['forum_id'];
 		$this->db->sql_freeresult($result);
 
-		if ($this->auth->acl_get('m_', $forum_id))
+		if ($this->auth->acl_get('m_', $forum_id) || $this->auth->acl_gets('u_replytoseecontent_see_all'))
 		{
 			$this->b_seecontent = true;
 		}
@@ -372,7 +410,6 @@ class listener implements EventSubscriberInterface
 			$this->b_topic_replied = $this->db->sql_affectedrows($result) ? true : false;
 			$this->db->sql_freeresult($result);
 		}
-
 		return (!$this->b_topic_replied && !$this->b_seecontent);
 	}
 
@@ -387,5 +424,22 @@ class listener implements EventSubscriberInterface
 		$this->db->sql_freeresult($result);
 
 		$this->check_topic_id($topic_id);
+	}
+
+	private function topic_data($topic_id)
+	{
+		if (empty($topic_id))
+		{
+			return false;
+		}
+
+		$sql = 'SELECT topic_first_post_id
+			FROM ' . TOPICS_TABLE . '
+				WHERE topic_id = ' . (int) $topic_id;
+		$result = $this->db->sql_query_limit($sql, 1);
+		$row = $this->db->sql_fetchrow($result);
+		$this->db->sql_freeresult($result);
+
+		return $row;
 	}
 }

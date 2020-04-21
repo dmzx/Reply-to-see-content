@@ -3,8 +3,8 @@
 	"type": "phpbb-extension",
 	"description": "Reply to see content in topic.",
 	"homepage": "https://www.dmzx-web.net",
-	"version": "1.0.0",
-	"time": "2020-04-14",
+	"version": "1.0.2",
+	"time": "2020-04-17",
 	"keywords": [
 		"phpbb",
 		"extension",
