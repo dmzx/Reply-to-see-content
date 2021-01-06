@@ -193,10 +193,13 @@ class listener implements EventSubscriberInterface
 
 			$topic_replies = $this->content_visibility->get_count('topic_posts', $topic_data, $event['forum_id']) - 1;
 
-	 		$this->template->assign_vars([
-				'S_REPLYTOSEECONTENT'			=> !$this->b_topic_replied && !$this->b_seecontent,
-				'REPLYTOSEECONTENT_MESSAGE'		=> $topic_replies ? $this->user->lang('REPLYTOSEECONTENT_REPLY', $topic_replies) : '',
-			]);
+			if ($topic_replies > 0)
+			{
+				$this->template->assign_vars([
+					'S_REPLYTOSEECONTENT'			=> !$this->b_topic_replied && !$this->b_seecontent,
+					'REPLYTOSEECONTENT_MESSAGE'		=> $topic_replies ? $this->user->lang('REPLYTOSEECONTENT_REPLY', $topic_replies) : '',
+				]);
+			}
 		}
 		$event['post_list'] = $post_list;
 		$event['sql_ary'] = $sql_ary;
