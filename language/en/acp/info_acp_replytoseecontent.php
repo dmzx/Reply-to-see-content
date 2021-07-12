@@ -32,6 +32,8 @@ if (empty($lang) || !is_array($lang))
 // ’ » “ ” …
 
 $lang = array_merge($lang, [
-	'REPLYTOSEECONTENT_ENABLE' 			=> 'Enable reply to see content',
-	'REPLYTOSEECONTENT_ENABLE_EXPLAIN' 	=> 'If set to yes users are able to view only the first post of any topic.<br>The rest of the posts in the topic will be shown when they make a post.',
+	'REPLYTOSEECONTENT_ENABLE' 				=> 'Enable reply to see content',
+	'REPLYTOSEECONTENT_ENABLE_EXPLAIN' 		=> 'If set to yes users are able to view only the first post of any topic.<br>The rest of the posts in the topic will be shown when they make a post.',
+	'REPLYTOSEECONTENT_URL_HIDE' 			=> 'Hide url in content',
+	'REPLYTOSEECONTENT_URL_HIDE_EXPLAIN' 	=> 'If set to yes users don’t see the url link in first topic.',
 ]);

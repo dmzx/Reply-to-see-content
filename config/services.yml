@@ -1,6 +1,6 @@
 services:
     dmzx.replytoseecontent.listener:
-        class: dmzx\replytoseecontent\event\listener
+        class: 'dmzx\replytoseecontent\event\listener'
         arguments:
             - '@content.visibility'
             - '@dbal.conn'
@@ -9,4 +9,4 @@ services:
             - '@auth'
             - '@user'
         tags:
-            - { name: event.listener }
+            - { name: 'event.listener' }

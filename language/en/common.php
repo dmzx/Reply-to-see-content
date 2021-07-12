@@ -34,6 +34,7 @@ if (empty($lang) || !is_array($lang))
 $lang = array_merge($lang, [
 	'REPLYTOSEECONTENT'				=> 'You must make a reply to see the posts in this topic.',
 	'REPLYTOSEECONTENT_TEXT'		=> 'You cannot see this content until you post a reply.',
+	'REPLYTOSEECONTENT_URL_TEXT'	=> '[You cannot see this url until you post a reply]',
 	'REPLYTOSEECONTENT_REPLY'		=> [
 		1 => 'This topic has <strong>1</strong> reply.',
 		2 => 'This topic has <strong>%d</strong> replies.',

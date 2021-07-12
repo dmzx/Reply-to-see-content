@@ -1,5 +1,9 @@
 ## Reply to see content Changelog
 
+### 1.0.4 - 2021-07-01
+- Added post visibility in search. 
+- Added option to hide url until post reply.
+
 ### 1.0.3 - 2021-01-05
 - Changed code when no posts are made, no message. 
 

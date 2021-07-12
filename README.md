@@ -1,6 +1,6 @@
 # Reply to see content Extension
 
-[![Build Status](https://travis-ci.org/dmzx/Reply-to-see-content.svg?branch=master)](https://travis-ci.org/dmzx/Reply-to-see-content)
+[![Build Status](https://travis-ci.com/dmzx/Reply-to-see-content.svg?branch=master)](https://travis-ci.com/dmzx/Reply-to-see-content)
 
 ## Install
 1. Download the latest release.
