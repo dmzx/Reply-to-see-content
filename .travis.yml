@@ -4,8 +4,6 @@ dist: xenial
 matrix:
     include:
         - php: 7.1
-          env: DB=none;NOTESTS=1
-        - php: 7.1
           env: DB=mariadb
         - php: 7.1
           env: DB=postgres
@@ -21,9 +19,9 @@ matrix:
           env: DB=mysqli
         - php: nightly
           env: DB=mysqli
-      allow_failures:
+    allow_failures:
         - php: nightly
-      fast_finish: true
+    fast_finish: true
 
 env:
     global:
