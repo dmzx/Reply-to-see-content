@@ -181,7 +181,7 @@ class listener implements EventSubscriberInterface
 		{
 			$this->check_post_id($event['post_id']);
 		}
-		else if($event['topic_id'] != 0)
+		else if ($event['topic_id'] != 0)
 		{
 			$this->check_topic_id($event['topic_id']);
 		}
@@ -215,7 +215,7 @@ class listener implements EventSubscriberInterface
 		$event['sql_ary'] = $sql_ary;
 	}
 
- 	public function viewtopic_modify_post_row($event)
+	public function viewtopic_modify_post_row($event)
 	{
 		$row 		= $event['row'];
 		$post_data 	= $event['row'];
@@ -253,7 +253,7 @@ class listener implements EventSubscriberInterface
 
 		if (($seecontent_url == true)&& !$this->unhide_in_post($row['post_id']) && (in_array($row['forum_id'], $forum_ids)))
 		{
-			foreach($this->url_regex() as $regex)
+			foreach ($this->url_regex() as $regex)
 			{
 				$row['post_text'] = preg_replace($regex, $this->user->lang('REPLYTOSEECONTENT_URL_TEXT'), $row['post_text']);
 			}
@@ -267,7 +267,7 @@ class listener implements EventSubscriberInterface
 
 		$rowset = $event['rowset'];
 
-		foreach($rowset as $row)
+		foreach ($rowset as $row)
 		{
 			$a_topic_ids[$row['topic_id']] = 1;
 		}
@@ -276,7 +276,7 @@ class listener implements EventSubscriberInterface
 
 		$a_topic_replied = $this->check_topic_ids($a_topic_ids);
 
-		foreach($rowset as $key => $row)
+		foreach ($rowset as $key => $row)
 		{
 			$topic_id = $row['topic_id'];
 
@@ -346,7 +346,7 @@ class listener implements EventSubscriberInterface
 
 			if (($seecontent_url == true) && $event['row']['post_id'] == $this->content_post_id || $event['row']['post_id'] != array_pop($this->topic_data($topic_id)))
 			{
-				foreach($this->url_regex() as $regex)
+				foreach ($this->url_regex() as $regex)
 				{
 					$post_row = array_merge($post_row, [
 						'POSTER_QUOTE' 	=> false,
@@ -396,7 +396,7 @@ class listener implements EventSubscriberInterface
 	{
 		$a_topic_replied = [];
 
-		foreach($topic_ids as $topic_id)
+		foreach ($topic_ids as $topic_id)
 		{
 			$a_topic_replied[$topic_id] = false;
 		}
@@ -408,7 +408,7 @@ class listener implements EventSubscriberInterface
 			AND post_visibility = 1';
 		$result = $this->db->sql_query($sql);
 
-		while($row = $this->db->sql_fetchrow($result))
+		while ($row = $this->db->sql_fetchrow($result))
 		{
 			$a_topic_replied[$row['topic_id']] = true;
 		}
@@ -420,13 +420,13 @@ class listener implements EventSubscriberInterface
 			WHERE ' . $this->db->sql_in_set('topic_id', $topic_ids);
 		$result = $this->db->sql_query($sql);
 
-		while($row = $this->db->sql_fetchrow($result))
+		while ($row = $this->db->sql_fetchrow($result))
 		{
 			$forum_ids[$row['topic_id']] = $row['forum_id'];
 		}
 		$this->db->sql_freeresult($result);
 
-		foreach($topic_ids as $topic_id)
+		foreach ($topic_ids as $topic_id)
 		{
 			if ($this->auth->acl_get('m_', $forum_ids[$topic_id]) || $this->auth->acl_gets('u_replytoseecontent_see_all'))
 			{
